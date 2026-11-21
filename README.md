@@ -35,16 +35,24 @@ delivery.py (Flask dashboard) --> move_base goal, /delivery_active
 ## Package Structure
 ```
 fyp_cz/
-├── launch/fyp_navigation.launch   # map server, AMCL, move_base, RViz (project settings)
+├── launch/
+│   └── fyp_navigation.launch
 ├── scripts/
-│   ├── yolo_fuzzy_speed.py        # YOLO11 + depth distance + fuzzy speed + voice alert
-│   ├── delivery.py                # Flask dashboard backend, delivery goals, CSV log
-│   ├── plot_map.py                # plots numbered waypoints on the map
-│   ├── extract_landmarks.py       # wall extraction (Hough Transform)
-│   └── waypoint_nav.py            # terminal goal sender (backup)
-├── web/delivery.html, icon.png    # dashboard front end
-├── maps/my_map.pgm, my_map.yaml   # saved map
-├── maps/waypoints.yaml            # delivery points (x, y, z, w)
+│   ├── yolo_fuzzy_speed.py
+│   ├── delivery.py
+│   ├── plot_map.py
+│   └── extract_landmarks.py
+├── web/
+│   ├── delivery.html
+│   └── icon.png
+├── maps/
+│   ├── my_map.pgm / my_map.yaml
+│   ├── waypoints.png / waypoints.yaml
+│   └── landmarks.png
+├── delivery_logs/
+├── .DS_Store
+├── LICENSE
+├── rosgraph.png
 ├── package.xml
 └── CMakeLists.txt
 ```
@@ -94,6 +102,7 @@ Dashboard: `http://localhost:5000` on the robot, or `http://<robot-ip>:5000` on 
 
 ## Author
 Ooi Chien Zhen
+
 Supervisor: Dr. Zati Hakim Azizul Hasan
 
 ## License
