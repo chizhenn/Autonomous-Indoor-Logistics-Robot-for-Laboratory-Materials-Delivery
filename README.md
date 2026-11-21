@@ -50,7 +50,6 @@ fyp_cz/
 │   ├── waypoints.png / waypoints.yaml
 │   └── landmarks.png
 ├── delivery_logs/
-├── .DS_Store
 ├── LICENSE
 ├── rosgraph.png
 ├── package.xml
@@ -60,7 +59,7 @@ fyp_cz/
 ## Installation
 ```bash
 cd ~/catkin_ws/src
-git clone <this-repo-url> fyp_cz
+git clone https://github.com/chizhenn/Autonomous-Indoor-Logistics-Robot-for-Laboratory-Materials-Delivery.git fyp_cz
 cd ~/catkin_ws && catkin_make && source devel/setup.bash
 chmod +x src/fyp_cz/scripts/*.py
 pip3 install ultralytics scikit-fuzzy flask
