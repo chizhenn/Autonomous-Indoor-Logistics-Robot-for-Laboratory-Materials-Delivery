@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratory Delivery Robot (Demo)</title>
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f7fa;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;
+ --primary:#1e3a8a;--primary-h:#172f6e;--danger:#c81e1e;--danger-h:#a51717;--ok:#047857;
+ --font:"Inter","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14.5px/1.55 var(--font);-webkit-font-smoothing:antialiased}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:42px;height:42px;border-radius:10px;background:var(--primary);display:grid;place-items:center}
+.brand h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em}
+.brand p{margin:0;color:var(--muted);font-size:13px}
+.top-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.conn{font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;background:#ecfdf5;color:var(--ok)}
+.conn.off{background:#fef2f2;color:var(--danger)}
+.layout{display:grid;grid-template-columns:380px 1fr;gap:22px;padding:22px 28px;max-width:1400px;margin:0 auto}
+@media(max-width:900px){.layout{grid-template-columns:1fr;padding:16px}}
+.side{display:flex;flex-direction:column;gap:22px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.card h2{font-size:15px;margin:0 0 16px;font-weight:600}
+.head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.head h2{margin:0}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#374151}
+.req{color:var(--danger);margin-left:2px}
+.field{margin-bottom:16px}
+input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font:15px var(--font);background:#fff;color:var(--text)}
+input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(30,58,138,.15)}
+.field.invalid input{border-color:var(--danger)}
+.hint{font-size:12px;color:var(--muted);margin-top:5px}
+.err{font-size:12px;color:var(--danger);margin-top:5px;display:none}
+.field.invalid .err{display:block}
+.combo{position:relative}
+.dropdown{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 10px 28px rgba(16,24,40,.12);max-height:220px;overflow:auto;z-index:10;display:none}
+.opt{padding:10px 12px;cursor:pointer}
+.opt:hover,.opt.active{background:#eef2ff}
+.opt.none{color:var(--muted);cursor:default}
+.actions{display:flex;gap:10px}
+.btn{flex:1;padding:11px;border:0;border-radius:8px;font:600 14.5px var(--font);cursor:pointer;color:#fff}
+.btn-primary{background:var(--primary)}.btn-primary:hover{background:var(--primary-h)}
+.btn-danger{background:var(--danger)}.btn-danger:hover{background:var(--danger-h)}
+.btn-ghost{background:#fff;color:#374151;border:1px solid #d1d5db}.btn-ghost:hover{background:#f9fafb}
+.btn-outline{flex:none;padding:7px 14px;font-size:13px;background:#fff;color:var(--danger);border:1px solid #fca5a5}
+.btn-outline:hover{background:#fef2f2}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.notice{margin-top:14px;font-size:13px;padding:10px 12px;border-radius:8px}
+.notice.info{padding:0;font-size:12px;color:var(--muted)}
+.notice.ok{background:#ecfdf5;color:var(--ok)}
+.notice.error{background:#fef2f2;color:var(--danger)}
+.notice.warn{background:#fffbeb;color:#b45309}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151}
+.badge.transit{background:#eef2ff;color:#1e3a8a}.badge.done{background:#ecfdf5;color:#047857}
+.badge.fail{background:#fef2f2;color:#b91c1c}.badge.stopped{background:#fffbeb;color:#b45309}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-size:14px}
+.row span{color:var(--muted)}.row b{font-weight:600}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%}
+.legend i.line{width:16px;height:3px;border-radius:2px}
+.legend i.sq{border-radius:2px}
+.alert{display:none;background:#fffbeb;border:1px solid #fcd34d;color:#92400e;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:13.5px;font-weight:500}
+.alert.stop{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
+canvas{width:100%;display:block;border-radius:8px;border:1px solid var(--border);background:#eef0f3;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:50;align-items:center;justify-content:center;padding:16px}
+.mbox{background:#fff;border-radius:12px;padding:24px;width:100%;max-width:420px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.mbox h3{margin:0 0 8px;font-size:17px}.mbox p{margin:0 0 18px;color:var(--muted);font-size:13.5px}
+.closed{min-height:100vh;display:grid;place-items:center;padding:16px}
+.closed .card{max-width:460px;text-align:center}
+.closed h2{font-size:20px;margin:0 0 8px}.closed p{color:var(--muted);margin:0}
+.demo{background:#1e3a8a;color:#fff;font-size:13px;padding:8px 28px;text-align:center}
+.demo b{font-weight:600}
+.closed code{background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:13px}
+</style></head><body>
+
+<div class="demo"><b>Demo mode</b> &middot; Simulated robot for preview only. The real dashboard runs on the Jupiter2 robot (Flask + ROS). Demo PIN: <b>1234</b></div>
+
+<header class="topbar">
+ <div class="brand">
+  <div class="logo"><img src="icon.png" alt="Robot logo" width="42" height="42" style="border-radius:10px"></div>
+  <div><h1>Laboratory Delivery Robot</h1><p>Department of Parasitology &middot; Delivery Management Console</p></div>
+ </div>
+ <div class="top-right">
+  <span id="conn" class="conn">&#9679; System Online</span>
+  <button id="closeSvc" class="btn btn-outline">Close Delivery Service</button>
+ </div>
+</header>
+
+<div id="modal" class="modal">
+ <div class="mbox">
+  <h3>Close Delivery Service</h3>
+  <p>This will stop any active delivery and shut down the delivery service on the robot. Do you want to continue?</p>
+  <div class="field" id="f-mpin">
+   <label for="mpin">Authorisation PIN<span class="req">*</span></label>
+   <input id="mpin" type="password" inputmode="numeric" placeholder="Enter your PIN" autocomplete="off">
+   <div class="err" id="merr">Please enter your authorisation PIN.</div>
+  </div>
+  <div class="actions">
+   <button id="mcancel" class="btn btn-ghost">Cancel</button>
+   <button id="mclose" class="btn btn-danger">Confirm and Close</button>
+  </div>
+ </div>
+</div>
+
+<main class="layout">
+ <div class="side">
+  <section class="card">
+   <h2>New Delivery Request</h2>
+   <div class="field" id="f-dest">
+    <label for="dest">Destination<span class="req">*</span></label>
+    <div class="combo">
+     <input id="dest" placeholder="Search for a destination" autocomplete="off" required aria-required="true">
+     <div id="dd" class="dropdown"></div>
+    </div>
+    <div class="hint">Start typing to search, or select a delivery point on the map.</div>
+    <div class="err">Please select a destination from the list.</div>
+   </div>
+   <div class="field" id="f-pin">
+    <label for="pin">Authorisation PIN<span class="req">*</span></label>
+    <input id="pin" type="password" inputmode="numeric" placeholder="Enter your PIN" autocomplete="off" required aria-required="true">
+    <div class="err">Please enter your authorisation PIN.</div>
+   </div>
+   <div class="actions">
+    <button id="go" class="btn btn-primary">Dispatch Robot</button>
+    <button id="stop" class="btn btn-danger">Stop Delivery</button>
+   </div>
+   <div id="notice" class="notice info"></div>
+  </section>
+
+  <section class="card">
+   <div class="head"><h2>Delivery Status</h2><span id="badge" class="badge">Available</span></div>
+   <div class="row"><span>Origin</span><b id="or">&mdash;</b></div>
+   <div class="row"><span>Destination</span><b id="de">&mdash;</b></div>
+   <div class="row"><span>Current Speed</span><b id="sp">&mdash;</b></div>
+   <div class="row"><span>Estimated Time of Arrival</span><b id="eta">&mdash;</b></div>
+  </section>
+ </div>
+
+ <section class="card">
+  <div class="head"><h2>Live Location Map</h2>
+   <div class="legend">
+    <span><svg width="14" height="14" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3" fill="#1e3a8a"/><circle cx="9" cy="13" r="1.8" fill="#fff"/><circle cx="15" cy="13" r="1.8" fill="#fff"/><path d="M12 2v4" stroke="#1e3a8a" stroke-width="2"/></svg>Robot</span>
+    <span><i style="background:#dc2626"></i>Origin</span>
+    <span><i style="background:#16a34a"></i>Destination</span>
+    <span><i style="background:#64748b"></i>Delivery Point</span>
+    <span><i class="line" style="background:#0ea5e9"></i>Planned Route</span>
+    <span><i class="sq" style="background:#ea580c"></i>Live Obstacle</span>
+   </div>
+  </div>
+  <div id="alert" class="alert"></div>
+  <canvas id="c"></canvas>
+ </section>
+</main>
+
+<script>
+/* ===================================================================
+   DEMO MODE - simulated robot (no ROS, no real robot).
+   Replaces the robot's Flask API (/api/info, /api/state, /api/go,
+   /api/cancel, /api/shutdown) inside the browser so the dashboard can
+   be previewed online. The real dashboard runs on the Jupiter2 robot.
+   =================================================================== */
+(function(){
+const PIN='1234', MAX_TRIES=5, VMAX=0.26, TIME_SCALE=4;      // demo runs 4x faster than real time
+const AX=20.0, BX=468.116, AY=-19.932, BY=144.357;            // metres -> map pixels
+const WP={
+ "Dr Tan Tiong Kai (Senior Lecturer)":[1.015,-0.092,-0.746,0.666],
+ "Molecular Laboratory 2":[4.432,-0.469,-0.750,0.661],
+ "Cold Room 2":[10.866,-1.625,-0.755,0.655],
+ "Emerging Pathogen Laboratory 2":[17.364,-2.431,-0.774,0.633],
+ "Vector Borne Diseases Laboratory":[20.581,-3.614,-0.776,0.630],
+ "Arthropod Laboratory":[26.962,-5.444,-0.798,0.603],
+ "Forensic Entomology Laboratory":[30.072,-6.583,-0.815,0.580],
+ "Insecticide Testing Facility":[30.091,-5.421,0.550,0.835],
+ "Neglected Tropical Diseases Laboratory":[24.053,-3.310,0.585,0.811],
+ "Vector Control Technology Laboratory":[20.828,-2.518,0.612,0.791],
+ "Molecular Laboratory 3":[17.734,-1.548,0.623,0.782],
+ "Filariasis Laboratory":[14.517,-0.971,0.638,0.770],
+ "Tissue Culture Laboratory":[4.390,0.722,0.643,0.766],
+ "Molecular Laboratory 1B":[-2.061,1.501,0.671,0.742],
+ "Molecular Laboratory 1A":[-5.414,2.014,0.608,0.794],
+ "Teaching Laboratory 2":[-17.897,4.510,0.604,0.797],
+ "CP Ramachandran Hall":[-11.744,1.862,-0.773,0.634]};
+const px=(x,y)=>[+(AX*x+BX).toFixed(1),+(AY*y+BY).toFixed(1)];
+
+/* corridor centre line: least-squares quadratic through all doors */
+const C=(()=>{const P=Object.values(WP);let S=[[0,0,0],[0,0,0],[0,0,0]],T=[0,0,0];
+ P.forEach(([x,y])=>{const v=[1,x,x*x];for(let i=0;i<3;i++){T[i]+=v[i]*y;for(let j=0;j<3;j++)S[i][j]+=v[i]*v[j];}});
+ for(let i=0;i<3;i++)for(let k=i+1;k<3;k++){const f=S[k][i]/S[i][i];for(let j=i;j<3;j++)S[k][j]-=f*S[i][j];T[k]-=f*T[i];}
+ const c=[0,0,0];for(let i=2;i>=0;i--){let s=T[i];for(let j=i+1;j<3;j++)s-=S[i][j]*c[j];c[i]=s/S[i][i];}return c;})();
+const cy=x=>C[0]+C[1]*x+C[2]*x*x;
+
+/* fuzzy speed control - same sets and rules as yolo_fuzzy_speed.py (Mamdani, centroid) */
+const tri=(v,a,b,c)=>v<=a||v>=c?(v===b?1:0):v<=b?(b===a?1:(v-a)/(b-a)):(c===b?1:(c-v)/(c-b));
+function fuzzy(d){
+ if(d===null)return 1.0; if(d<=0.4)return 0.0; d=Math.min(d,5);
+ const n=tri(d,0,0,1.5), m=tri(d,1.0,2.25,3.5), f=tri(d,3.0,5.0,5.0);
+ let num=0,den=0;
+ for(let s=0;s<=1.0001;s+=0.01){const mu=Math.max(Math.min(n,tri(s,0,0,0.2)),Math.min(m,tri(s,0.3,0.5,0.7)),Math.min(f,tri(s,0.8,1.0,1.0)));num+=mu*s;den+=mu;}
+ return den?num/den:0;}
+
+/* voice (browser speech, stands in for espeak on the robot) */
+let lastAlert=0;
+function say(t){try{const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=0.95;speechSynthesis.speak(u);}catch(e){}}
+
+/* simulated robot state */
+const home=WP["Dr Tan Tiong Kai (Senior Lecturer)"];
+const R={x:home[0],y:home[1],yaw:2*Math.atan2(home[2],home[3]),status:'Idle',speed:0,
+ path:[],i:0,origin:null,originXY:null,dest:null,still:null,person:null,pEvent:null,done:0};
+const fails={n:0,until:0};
+
+function makePath(ax,ay,bx,by){            // door -> corridor centre -> along corridor -> door
+ const p=[[ax,ay]],dir=bx>=ax?1:-1,n=Math.max(1,Math.ceil(Math.abs(bx-ax)/0.25));
+ for(let k=0;k<=n;k++){const x=ax+dir*Math.abs(bx-ax)*k/n;p.push([x,cy(x)]);}
+ p.push([bx,by]);return p;}
+const seg=(a,b)=>Math.hypot(b[0]-a[0],b[1]-a[1]);
+function remaining(){if(R.path.length<2)return 0;let d=seg([R.x,R.y],R.path[R.i]);
+ for(let k=R.i;k<R.path.length-1;k++)d+=seg(R.path[k],R.path[k+1]);return d;}
+function nearestName(){let best=null,bd=1e9;for(const k in WP){const d=Math.hypot(WP[k][0]-R.x,WP[k][1]-R.y);if(d<bd){bd=d;best=k;}}return bd<0.5?best:'Start';}
+
+let tPrev=performance.now();
+function step(){
+ const now=performance.now(),dt=Math.min(0.25,(now-tPrev)/1000)*TIME_SCALE;tPrev=now;
+ if(R.status!=='Delivering'){R.speed=0;R.person=null;return;}
+ const total=R.total, left=remaining();
+ // one person walks towards the robot part-way along longer routes
+ if(!R.pEvent&&total>6&&left<total*0.7)R.pEvent={t:0};
+ if(R.pEvent&&!R.pEvent.over){const e=R.pEvent;e.t+=dt/TIME_SCALE;
+  if(e.hold===undefined){R.person=Math.max(0.35,4.6-0.9*e.t);if(R.person<=0.35)e.hold=0;}
+  else{e.hold+=dt/TIME_SCALE;if(e.hold>2.5){e.over=true;R.person=null;}}}
+ if(R.person!==null&&R.person<3&&now-lastAlert>5000){lastAlert=now;say('Excuse me, delivery robot passing');}
+ R.speed=VMAX*fuzzy(R.person);
+ if(R.speed<0.005){if(R.still===null)R.still=now;}else R.still=null;
+ let move=R.speed*dt;
+ while(move>0&&R.i<R.path.length){const t=R.path[R.i],d=seg([R.x,R.y],t);
+  if(d<=move){R.x=t[0];R.y=t[1];move-=d;R.i++;}
+  else{R.yaw=Math.atan2(t[1]-R.y,t[0]-R.x);R.x+=(t[0]-R.x)*move/d;R.y+=(t[1]-R.y)*move/d;move=0;}}
+ if(R.i>=R.path.length){const w=WP[R.dest];R.yaw=2*Math.atan2(w[2],w[3]);R.status='Arrived';R.speed=0;R.path=[];R.person=null;
+  say(`Your delivery for ${R.dest} is here. Please collect your items.`);}
+}
+setInterval(step,100);
+
+function personObstacles(){                  // the person shows as live obstacle cells ahead of the robot
+ if(R.person===null||R.person>4)return[];const c=Math.cos(R.yaw),s=Math.sin(R.yaw),pts=[];
+ const cx=R.x+c*(R.person+0.15),cyy=R.y+s*(R.person+0.15);
+ for(let a=-0.18;a<=0.18;a+=0.06)for(let b=-0.1;b<=0.1;b+=0.05)pts.push(px(cx+c*b-s*a,cyy+s*b+c*a));return pts;}
+
+const J=(o,code)=>new Response(JSON.stringify(o),{status:code||200,headers:{'Content-Type':'application/json'}});
+function checkPin(pin){
+ if(Date.now()<fails.until)return J({ok:false,msg:'Too many incorrect attempts. Please wait 60 seconds.'},429);
+ if(String(pin||'').trim()!==PIN){if(++fails.n>=MAX_TRIES){fails.n=0;fails.until=Date.now()+60000;}
+  return J({ok:false,msg:'Incorrect PIN. Please try again.'},403);}
+ fails.n=0;return null;}
+
+const realFetch=window.fetch.bind(window);
+window.fetch=async(url,opt)=>{
+ const u=String(url);if(!u.startsWith('/api/'))return realFetch(url,opt);
+ const body=opt&&opt.body?JSON.parse(opt.body):{};
+ if(u==='/api/info')return J({waypoints:Object.keys(WP).sort().map(k=>({name:k,px:px(WP[k][0],WP[k][1])}))});
+ if(u==='/api/state'){
+  const o={status:R.status,speed:+R.speed.toFixed(2),robot:[...px(R.x,R.y),R.yaw],
+   path:R.path.slice(R.i).filter((p,k)=>k%3===0).map(p=>px(p[0],p[1])),
+   obstacles:personObstacles(),origin:null,dest:null,eta:null,person:R.person===null?null:+R.person.toFixed(2)};
+  if(R.dest){o.origin={name:R.origin,px:px(...R.originXY)};o.dest={name:R.dest,px:px(WP[R.dest][0],WP[R.dest][1])};}
+  if(R.status==='Delivering'){if(R.still&&performance.now()-R.still>1500)o.eta='paused';
+   else o.eta=Math.round(remaining()/(VMAX*0.9)/TIME_SCALE);}
+  return J(o);}
+ if(u==='/api/go'){const bad=checkPin(body.pin);if(bad)return bad;
+  const name=Object.keys(WP).find(k=>k.toLowerCase()===String(body.dest||'').trim().toLowerCase());
+  if(!name)return J({ok:false,msg:'Please select a valid destination.'},400);
+  if(R.status==='Delivering')return J({ok:false,msg:'The robot is on a delivery. Stop it before starting a new one.'},409);
+  const w=WP[name];Object.assign(R,{origin:nearestName(),originXY:[R.x,R.y],dest:name,status:'Delivering',
+   path:makePath(R.x,R.y,w[0],w[1]),i:0,still:null,person:null,pEvent:null});
+  R.total=remaining();try{speechSynthesis.speak(new SpeechSynthesisUtterance(''));}catch(e){}
+  return J({ok:true,msg:`Delivery to ${name} has started.`});}
+ if(u==='/api/cancel'){if(R.status==='Delivering'){R.status='Cancelled';R.path=[];R.speed=0;R.person=null;}
+  return J({ok:true,msg:'Stop command sent. The robot is stopping.'});}
+ if(u==='/api/shutdown'){const bad=checkPin(body.pin);if(bad)return bad;
+  R.status='Cancelled';R.path=[];return J({ok:true,msg:'Delivery Service Closed'});}
+ return J({ok:false,msg:'Not found'},404);};
+})();
+</script>
+
+<script>
+const $=id=>document.getElementById(id), c=$('c'), x=c.getContext('2d'), map=new Image();
+const FONT='Inter,"Segoe UI",Roboto,Arial,sans-serif';
+const FOOT='Fields marked <span class="req">*</span> are required. In an emergency, press the red emergency stop button on the robot.';
+let places=[], state=null, sel=null, K=2, active=-1, last=null;
+const STATUS={Idle:['Available',''],Delivering:['In Progress','transit'],Arrived:['Completed','done'],
+              Failed:['Unsuccessful','fail'],Cancelled:['Cancelled','stopped']};
+
+/* ---------- Message area ---------- */
+function notice(msg,type){const n=$('notice');n.textContent=msg;n.className='notice '+type;}
+function resetNotice(){const n=$('notice');n.innerHTML=FOOT;n.className='notice info';}
+resetNotice();
+
+map.onload=()=>{K=Math.max(1,Math.floor(1000/map.width));c.width=map.width*K;c.height=map.height*K;draw();};
+map.src='map.png';
+fetch('/api/info').then(r=>r.json()).then(d=>{places=d.waypoints;draw();});
+
+/* ---------- Destination search ---------- */
+const dest=$('dest'), dd=$('dd');
+function matches(){const q=dest.value.trim().toLowerCase();return places.filter(p=>p.name.toLowerCase().includes(q));}
+function openList(){const m=matches();active=-1;dd.innerHTML='';
+ if(!m.length)dd.innerHTML='<div class="opt none">No matching destination found</div>';
+ m.forEach(p=>{const o=document.createElement('div');o.className='opt';o.textContent=p.name;
+  o.onmousedown=e=>{e.preventDefault();choose(p.name);};dd.appendChild(o);});
+ dd.style.display='block';}
+function closeList(){dd.style.display='none';}
+function choose(name){sel=name;dest.value=name;closeList();$('f-dest').classList.remove('invalid');resetNotice();draw();}
+function syncSel(){const v=dest.value.trim().toLowerCase();const p=places.find(p=>p.name.toLowerCase()===v);sel=p?p.name:null;draw();}
+dest.addEventListener('focus',openList);
+dest.addEventListener('input',()=>{resetNotice();syncSel();openList();});
+dest.addEventListener('blur',()=>{closeList();syncSel();if(sel)dest.value=sel;});
+dest.addEventListener('keydown',e=>{
+ if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(dd.style.display!=='block')openList();
+  const o=[...dd.querySelectorAll('.opt:not(.none)')];if(!o.length)return;
+  active=(active+(e.key==='ArrowDown'?1:-1)+o.length)%o.length;o.forEach((el,i)=>el.classList.toggle('active',i===active));}
+ else if(e.key==='Enter'){e.preventDefault();const o=[...dd.querySelectorAll('.opt:not(.none)')];
+  const pick=o[active>=0?active:0];if(pick)choose(pick.textContent);}
+ else if(e.key==='Escape')closeList();});
+
+/* select a delivery point by clicking the map */
+c.addEventListener('click',e=>{const r=c.getBoundingClientRect(),sx=c.width/r.width;
+ const mx=(e.clientX-r.left)*sx,my=(e.clientY-r.top)*sx;let best=null,bd=1e9;
+ places.forEach(p=>{const d=Math.hypot(p.px[0]*K-mx,p.px[1]*K-my);if(d<bd){bd=d;best=p;}});
+ if(best&&bd<25*sx)choose(best.name);});
+
+/* ---------- Drawing ---------- */
+function dot(px,py,r,fill,stroke){x.beginPath();x.arc(px,py,r,0,7);x.fillStyle=fill;x.fill();
+ if(stroke){x.lineWidth=2;x.strokeStyle=stroke;x.stroke();}}
+function rr(a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);
+ x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
+function tag(text,px,py,color){x.font='600 14px '+FONT;const w=x.measureText(text).width+20,h=26;
+ const lx=Math.min(px+12,c.width-w-4),ly=Math.max(py-h-8,4);
+ x.save();x.shadowColor='rgba(0,0,0,.18)';x.shadowBlur=6;x.fillStyle='#fff';rr(lx,ly,w,h,6);x.fill();x.restore();
+ x.strokeStyle=color;x.lineWidth=1.5;rr(lx,ly,w,h,6);x.stroke();x.fillStyle='#111827';x.fillText(text,lx+10,ly+18);}
+function robot(px,py,yaw){
+ const ax=px+24*Math.cos(yaw),ay=py+24*Math.sin(yaw);               /* direction arrow */
+ x.save();x.translate(ax,ay);x.rotate(yaw);x.fillStyle='#1e3a8a';
+ x.beginPath();x.moveTo(8,0);x.lineTo(-5,-6);x.lineTo(-5,6);x.closePath();x.fill();x.restore();
+ x.save();x.shadowColor='rgba(0,0,0,.25)';x.shadowBlur=6;x.fillStyle='#1e3a8a';rr(px-13,py-10,26,22,5);x.fill();x.restore();
+ x.strokeStyle='#fff';x.lineWidth=2;rr(px-13,py-10,26,22,5);x.stroke();
+ x.strokeStyle='#1e3a8a';x.lineWidth=2.5;x.beginPath();x.moveTo(px,py-10);x.lineTo(px,py-17);x.stroke();
+ dot(px,py-18,2.8,'#1e3a8a');dot(px-5,py,2.8,'#fff');dot(px+5,py,2.8,'#fff');
+ x.fillStyle='#fff';x.fillRect(px-5,py+5,10,2);}
+function draw(){if(!map.width)return;x.imageSmoothingEnabled=false;x.drawImage(map,0,0,c.width,c.height);
+ if(state&&state.obstacles){x.fillStyle='rgba(234,88,12,.9)';const s=Math.max(3,K);
+  state.obstacles.forEach(p=>x.fillRect(p[0]*K-s/2,p[1]*K-s/2,s,s));}
+ if(state&&state.path.length>1){x.strokeStyle='#0ea5e9';x.lineWidth=4;x.lineJoin='round';x.beginPath();
+  state.path.forEach((p,i)=>i?x.lineTo(p[0]*K,p[1]*K):x.moveTo(p[0]*K,p[1]*K));x.stroke();}
+ places.forEach(p=>{const px=p.px[0]*K,py=p.px[1]*K,on=p.name===sel;
+  if(on)dot(px,py,12,'rgba(30,58,138,.18)');dot(px,py,6,on?'#1e3a8a':'#64748b','#fff');
+  x.font=(on?'600 ':'500 ')+'13px '+FONT;x.fillStyle='#374151';x.fillText(p.name,px+10,py+18);});
+ if(state&&state.origin){const o=state.origin,px=o.px[0]*K,py=o.px[1]*K;dot(px,py,8,'#dc2626','#fff');tag('Origin: '+o.name,px,py,'#dc2626');}
+ if(state&&state.dest){const d=state.dest,px=d.px[0]*K,py=d.px[1]*K;dot(px,py,8,'#16a34a','#fff');tag('Destination: '+d.name,px,py,'#16a34a');}
+ if(state&&state.robot)robot(state.robot[0]*K,state.robot[1]*K,-state.robot[2]);}
+
+/* ---------- Live status ---------- */
+function fmtEta(e){if(e===null||e===undefined)return'—';if(e==='paused')return'On hold';
+ if(e==='calculating')return'Calculating…';const m=Math.floor(e/60),s=e%60;return m?`${m} min ${s} s`:`${s} s`;}
+async function poll(){try{state=await(await fetch('/api/state',{cache:'no-store'})).json();
+  $('conn').innerHTML='&#9679; System Online';$('conn').className='conn';
+  const [txt,cls]=STATUS[state.status]||[state.status,''];$('badge').textContent=txt;$('badge').className='badge '+cls;
+  $('or').textContent=state.origin?state.origin.name:'—';$('de').textContent=state.dest?state.dest.name:'—';
+  $('sp').textContent=state.speed.toFixed(2)+' m/s';$('eta').textContent=fmtEta(state.eta);
+  $('go').disabled=state.status==='Delivering';
+
+  /* update message when a delivery finishes */
+  if(last==='Delivering'&&state.status!=='Delivering'&&state.dest){const d=state.dest.name;
+   if(state.status==='Arrived')notice(`Delivery to ${d} completed successfully.`,'ok');
+   else if(state.status==='Failed')notice(`Delivery to ${d} was unsuccessful. Please check the robot and try again.`,'error');
+   else if(state.status==='Cancelled')notice(`Delivery to ${d} was cancelled.`,'warn');}
+  last=state.status;
+
+  const a=$('alert');
+  if(state.person!==null&&state.person<5){const d=state.person<=0.4?'within 0.4 m':'at '+state.person.toFixed(2)+' m';
+   const moving=state.status==='Delivering',stop=state.person<=0.4;
+   a.className='alert'+(moving&&stop?' stop':'');a.style.display='block';
+   a.textContent=moving?(stop?`Person detected ${d}. The robot has stopped for safety.`
+                             :`Person detected ${d}. The robot is reducing speed.`)
+                       :`Person detected ${d} of the robot.`;}
+  else a.style.display='none';
+ }catch(err){$('conn').innerHTML='&#9679; System Offline';$('conn').className='conn off';}
+ draw();}
+const timer=setInterval(poll,500);poll();
+
+/* ---------- Actions ---------- */
+async function post(u,b){const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})});return r.json();}
+$('pin').addEventListener('input',()=>{$('f-pin').classList.remove('invalid');resetNotice();});
+$('pin').addEventListener('keydown',e=>{if(e.key==='Enter')$('go').click();});
+$('go').onclick=async()=>{let bad=false;
+ if(!sel){$('f-dest').classList.add('invalid');bad=true;}
+ if(!$('pin').value.trim()){$('f-pin').classList.add('invalid');bad=true;}
+ if(bad)return;
+ if(!confirm(`Confirm dispatch of the robot to ${sel}?`))return;
+ try{const r=await post('/api/go',{dest:sel,pin:$('pin').value.trim()});
+  notice(r.msg,r.ok?'ok':'error');
+  if(!r.ok&&/PIN/.test(r.msg))$('pin').value='';          /* clear only a wrong PIN */
+ }catch(e){notice('Unable to reach the robot. Please check the network connection.','error');}};
+$('stop').onclick=async()=>{try{const r=await post('/api/cancel');notice(r.msg,'warn');}
+ catch(e){notice('Unable to reach the robot. Please check the network connection.','error');}};
+
+/* ---------- Close Delivery Service ---------- */
+const modal=$('modal'), mpin=$('mpin'), fm=$('f-mpin'), merr=$('merr');
+function mError(msg){merr.textContent=msg;fm.classList.add('invalid');}
+$('closeSvc').onclick=()=>{mpin.value=$('pin').value;fm.classList.remove('invalid');modal.style.display='flex';mpin.focus();};
+$('mcancel').onclick=()=>{modal.style.display='none';};
+mpin.addEventListener('input',()=>fm.classList.remove('invalid'));
+mpin.addEventListener('keydown',e=>{if(e.key==='Enter')$('mclose').click();});
+$('mclose').onclick=async()=>{
+ if(!mpin.value.trim()){mError('Please enter your authorisation PIN.');return;}
+ try{const r=await post('/api/shutdown',{pin:mpin.value.trim()});
+  if(!r.ok){mError(r.msg);if(/PIN/.test(r.msg))mpin.value='';return;}
+  clearInterval(timer);
+  document.body.innerHTML=`<div class="closed"><section class="card">
+   <h2>Delivery Service Closed</h2>
+   <p>Any active delivery has been stopped and the delivery service has been shut down.</p>
+   <p style="margin-top:10px">Refresh this page to restart the demo. On the robot, run <code>rosrun fyp_cz delivery.py</code>.</p>
+  </section></div>`;
+ }catch(e){mError('Unable to reach the robot. Please check the network connection.');}};
+</script>
+</body></html>
