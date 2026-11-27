@@ -26,7 +26,7 @@ from nav_msgs.msg import Odometry, Path, OccupancyGrid
 from std_msgs.msg import Float32, Bool
 
 # ---------------- Settings ----------------
-PIN = "8977"            # <-- change this
+PIN = os.environ.get('DELIVERY_PIN', '1234')   # set your own PIN: export DELIVERY_PIN=xxxx
 PORT = 5000
 DEFAULT_SPEED = 0.15    # m/s, ETA guess before robot moves
 MAX_PIN_TRIES = 5       # lock for 60 s after 5 wrong PINs
