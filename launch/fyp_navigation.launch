@@ -1,0 +1,45 @@
+<!--
+  fyp_navigation.launch
+  Starts the full navigation system for the delivery robot:
+    1. map_server : loads the saved map (my_map.yaml)
+    2. AMCL       : localises the robot on the map using the LiDAR
+    3. move_base  : plans the route (A*) and drives it (DWA), with obstacle avoidance
+    4. RViz       : shows the map, robot and path
+  Changes from the original Jupiter2 navigation (Jupiter files untouched):
+    - move_base speed is sent to /nav_vel (not /cmd_vel), so yolo_fuzzy_speed.py
+      can slow it down for people before it reaches the wheels
+    - keeps at least 15 cm from obstacles and shows live obstacles on the dashboard
+  Run: roslaunch fyp_cz fyp_navigation.launch
+-->
+<launch>
+  <arg name="map_file" default="/home/mustar/catkin_ws/src/fyp_cz/maps/my_map.yaml"/>
+  <arg name="open_rviz" default="true"/>
+  <arg name="move_forward_only" default="false"/>
+
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+  <include file="$(find jupiterobot2_navigation)/launch/includes/amcl.launch"/>
+
+  <include file="$(find jupiterobot2_navigation)/launch/includes/move_base.launch">
+    <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+    <arg name="cmd_vel_topic" value="/nav_vel"/>   <!-- my own topic: speed goes to YOLO first, not wheels -->
+  </include>
+
+  <!-- fyp_cz overrides (Jupiter files untouched) -->
+  <group ns="move_base">
+    <param name="DWAPlannerROS/max_vel_x" value="0.35"/>                   <!-- top forward speed (m/s) -->
+    <param name="DWAPlannerROS/max_vel_trans" value="0.35"/>               <!-- must be >= max_vel_x -->
+    <param name="local_costmap/width" value="4.0"/>                        <!-- live obstacle view: 4 x 4 m -->
+    <param name="local_costmap/height" value="4.0"/>
+    <param name="local_costmap/update_frequency" value="5.0"/>             <!-- refresh view 5x/s -->
+    <param name="local_costmap/publish_frequency" value="2.0"/>            <!-- display 2x/s (saves CPU) -->
+    <param name="local_costmap/always_send_full_costmap" value="true"/>    <!-- dashboard shows obstacles -->
+    <param name="local_costmap/footprint_padding" value="0.15"/>           <!-- 15 cm safety gap -->
+    <param name="global_costmap/footprint_padding" value="0.15"/>          <!-- 15 cm safety gap -->
+  </group>
+
+  <group if="$(arg open_rviz)">
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find jupiterobot2_navigation)/rviz/navigation.rviz"/>
+  </group>
+</launch>
